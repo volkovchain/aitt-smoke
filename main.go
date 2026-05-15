@@ -13,6 +13,10 @@ func newMux() *http.ServeMux {
 		w.Header().Set("content-type", "application/json")
 		_, _ = fmt.Fprintln(w, `{"ok":true}`)
 	})
+	mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		_, _ = fmt.Fprintln(w, `{"ready":true}`)
+	})
 	mux.HandleFunc("/version", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
