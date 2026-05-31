@@ -1,9 +1,10 @@
 // Package main реализует HTTP-сервис aitt-smoke — минимальную «заглушку»,
 // используемую оркестратором aitt в качестве smoke-теста окружения.
 //
-// Сервис регистрирует два эндпоинта:
+// Сервис регистрирует эндпоинты:
 //
 //   - GET /health  — отдаёт JSON {"ok":true} с Content-Type application/json;
+//   - GET /ping    — отдаёт строку "pong" с Content-Type text/plain;
 //   - GET /version — отдаёт строку "v1" с Content-Type text/plain.
 //
 // Адрес прослушивания берётся из переменной окружения LISTEN_ADDR;
@@ -25,6 +26,9 @@ import (
 //   - "/health"  — обработчик пишет заголовок Content-Type: application/json
 //     и тело `{"ok":true}\n`. Статус ответа — 200 OK (выставляется неявно
 //     первым вызовом записи в ResponseWriter).
+//   - "/ping"     — обработчик пишет заголовок Content-Type: text/plain,
+//     явно вызывает WriteHeader(http.StatusOK) и пишет тело "pong" без
+//     завершающего перевода строки.
 //   - "/version" — обработчик пишет заголовок Content-Type: text/plain,
 //     явно вызывает WriteHeader(http.StatusOK) и пишет тело "v1" без
 //     завершающего перевода строки.
@@ -45,6 +49,11 @@ func newMux() *http.ServeMux {
 	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("content-type", "application/json")
 		_, _ = fmt.Fprintln(w, `{"ok":true}`)
+	})
+	mux.HandleFunc("/ping", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, "pong")
 	})
 	mux.HandleFunc("/version", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
